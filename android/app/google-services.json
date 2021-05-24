@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "626183167405",
+    "project_id": "app04-lddm",
+    "storage_bucket": "app04-lddm.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:626183167405:android:3c92ffde6116a2f7e69524",
+        "android_client_info": {
+          "package_name": "pucminas.br.agenda_de_contatos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "626183167405-5eatsu429lt5i9ajdr2kvk15udceajl6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIm8LyUV6EdnTw_OpqrA4gOCOPVqLLwOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "626183167405-5eatsu429lt5i9ajdr2kvk15udceajl6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
