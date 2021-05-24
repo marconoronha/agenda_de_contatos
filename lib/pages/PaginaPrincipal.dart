@@ -23,7 +23,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       appBar: AppBar(
         title: Text("Contatos"),
         centerTitle: true,
-        actions: <Widget>[
+        /*actions: <Widget>[
           IconButton(
               icon: Icon(Icons.search),
               onPressed: (){
@@ -35,7 +35,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                 );
               }
           )
-        ],
+        ],*/
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.amber,

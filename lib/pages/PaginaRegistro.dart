@@ -105,7 +105,7 @@ class _PaginaRegistroState extends State<PaginaRegistro> {
                     if(! formOk){
                       return;
                     }else{
-                      await db.collection("contatos")
+                      await db.collection('usuarios')
                           .add({
                         'nome': _controllerLogin.text,
                         'senha': _controllerSenha.text,
