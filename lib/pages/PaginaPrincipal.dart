@@ -1,8 +1,10 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'crud/PaginaAdicionar.dart';
-import 'crud/PaginaPesquisar.dart';
+import 'PaginaContato.dart';
 
 class PaginaPrincipal extends StatefulWidget {
   @override
@@ -23,19 +25,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       appBar: AppBar(
         title: Text("Contatos"),
         centerTitle: true,
-        /*actions: <Widget>[
-          IconButton(
-              icon: Icon(Icons.search),
-              onPressed: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => PaginaPesquisar()
-                  ),
-                );
-              }
-          )
-        ],*/
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.amber,
@@ -73,7 +62,16 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               var item = snapshot.data.docs[i];
               CollectionReference contatos = FirebaseFirestore.instance.collection('contatos');
               return GestureDetector(
-                onTap: () {
+                onTap: (){
+                  print(item.id);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => PaginaContato(idContato: item.id)
+                    ),
+                  );
+                },
+                onLongPress: () {
                   showDialog(
                       context: context,
                       builder: (BuildContext context){
@@ -99,12 +97,14 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                               },
                               child: Text('Editar'),
                             ),
+
                             TextButton(
                               onPressed: () => contatos
                             .doc(item.id)
                             .update({'excluido': true}).then((value) => Navigator.of(context).pop()),
                               child: Text('Excluir'),
                             ),
+
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
                               child: Text('Cancelar'),
@@ -123,30 +123,50 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                           children: <Widget>[
                             Text(
                               "Nome: ",
+                              style: TextStyle(fontSize: 12),
                             ),
                             Text(
                               "E-mail: ",
+                              style: TextStyle(fontSize: 12),
                             ),
                             Text(
                               "Endereço: ",
+                              style: TextStyle(fontSize: 12),
                             ),
                             Text(
                               "CEP: ",
+                              style: TextStyle(fontSize: 12),
                             ),
                             Text(
                               "Telefone: ",
+                              style: TextStyle(fontSize: 12),
                             ),
                           ],
                         ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
+                        Padding(padding: EdgeInsets.only(left: 12)),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(item['nome']),
-                            Text(item['email']),
-                            Text(item['endereco']),
-                            Text(item['cep']),
-                            Text(item['telefone']),
+                            Text(
+                              item['nome'],
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              item['email'],
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              item['endereco'],
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              item['cep'],
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              item['telefone'],
+                              style: TextStyle(fontSize: 12),
+                            ),
                           ],
                         ),
                       ],
@@ -171,9 +191,14 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
     String nomeEditado = nome;
     String emailEditado = email;
-    String enderecoEditado = endereco;
     String cepEditado = cep;
     String telefoneEditado = telefone;
+
+    _controllerNome.text = nome;
+    _controllerEmail.text = email;
+    _controllerEndereco.text = endereco;
+    _controllerCep.text = cep;
+    _controllerTelefone.text = telefone;
 
     final _formKey = GlobalKey<FormState>();
 
@@ -225,12 +250,12 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               color: Colors.black,
             ),
             decoration: InputDecoration(
-              labelText: "Endereco: ",
+              labelText: "CEP: ",
             ),
-            controller: _controllerEndereco,
+            controller: _controllerCep,
             validator: (String text){
               if(!text.isEmpty){
-                enderecoEditado = _controllerEndereco.text;
+                cepEditado = _controllerCep.text;
               }
               return null;
             },
@@ -243,12 +268,12 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               color: Colors.black,
             ),
             decoration: InputDecoration(
-              labelText: "CEP: ",
+              labelText: "Endereco: ",
             ),
-            controller: _controllerCep,
+            controller: _controllerEndereco,
             validator: (String text){
-              if(!text.isEmpty){
-                cepEditado = _controllerCep.text;
+              if(text.isEmpty){
+                return "Digite o endereco do contato ";
               }
               return null;
             },
@@ -274,29 +299,65 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           SizedBox(height: 20,),
 
           TextButton(
-            onPressed: () {
-              bool formOk = _formKey.currentState.validate();
-              if(! formOk){
-                return;
-              }else{
-                contatos
-                    .doc(id)
-                    .update({'nome': nomeEditado, 'email': emailEditado, 'endereco': enderecoEditado, 'cep': cepEditado, 'telefone': telefoneEditado, }).then((value) => Navigator.of(context).pop());
+            onPressed:  () async {
+              if(_controllerCep.text.isNotEmpty){
+                var url = Uri.parse('https://viacep.com.br/ws/${_controllerCep.text}/json');
+                var response = await http.get(url);
+                print('Response status: ${response.statusCode}');
+                print('Response body: ${response.body}');
+
+                Map<String, dynamic> retorno = json.decode(response.body);
+                print(retorno);
+
+
+                _controllerEndereco.text = trataResponse(retorno);
 
               }
+
+              print("Endereço "+_controllerEndereco.text);
+              print("CEP "+_controllerCep.text);
+
             },
-            child: Text('Salvar'),
+            child: Text('Buscar CEP'),
           ),
 
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancelar'),
+          Container(
+            height: 46,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    bool formOk = _formKey.currentState.validate();
+                    if(! formOk){
+                      return;
+                    }else{
+                      contatos
+                          .doc(id)
+                          .update({'nome': nomeEditado, 'email': emailEditado, 'endereco': _controllerEndereco.text, 'cep': cepEditado, 'telefone': telefoneEditado, }).then((value) => Navigator.of(context).pop());
+
+                    }
+                  },
+                  child: Text('Salvar'),
+                ),
+                Padding(padding: EdgeInsets.only(left: 40)),
+
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Cancelar'),
+                ),
+              ],
+            ),
           ),
+
+
 
         ],
       ),
     );
   }
 
-
+  trataResponse(Map<String, dynamic> ret){
+    return ret["logradouro"]+", "+ret["bairro"]+" - "+ret["localidade"];
+  }
 }

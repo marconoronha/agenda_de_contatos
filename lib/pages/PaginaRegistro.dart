@@ -106,16 +106,31 @@ class _PaginaRegistroState extends State<PaginaRegistro> {
                       return;
                     }else{
                       await db.collection('usuarios')
-                          .add({
-                        'nome': _controllerLogin.text,
-                        'senha': _controllerSenha.text,
-                      }).then((value){
-                        showDialog(
-                            context: context,
-                            builder: (context){
-                              return _confirmacao();
-                            });
+                          .where('nome', isEqualTo: _controllerLogin.text)
+                          .get().then((QuerySnapshot querySnapshot) {
+
+                            if(querySnapshot.docs.isEmpty){
+                              db.collection('usuarios')
+                                  .add({
+                                'nome': _controllerLogin.text,
+                                'senha': _controllerSenha.text,
+                              }).then((value){
+                                showDialog(
+                                    context: context,
+                                    builder: (context){
+                                      return _confirmacao();
+                                    });
+                              });
+                            }
+                            else{
+                              showDialog(
+                                  context: context,
+                                  builder: (context){
+                                    return _falha();
+                                  });
+                            }
                       });
+
                       _controllerLogin.text = "";
                       _controllerSenha.text = "";
                       _controllerConfirmaSenha.text = "";
@@ -132,6 +147,20 @@ class _PaginaRegistroState extends State<PaginaRegistro> {
   _confirmacao(){
     return AlertDialog(
       title: Text("Registro efetuado"),
+      actions: <Widget>[
+        TextButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text("Ok")
+        ),
+      ],
+    );
+  }
+
+  _falha(){
+    return AlertDialog(
+      title: Text("Username taken!"),
       actions: <Widget>[
         TextButton(
             onPressed: (){

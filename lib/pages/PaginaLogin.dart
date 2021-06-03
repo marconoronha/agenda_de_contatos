@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'PaginaPrincipal.dart';
 import 'PaginaRegistro.dart';
@@ -14,6 +15,9 @@ class _PaginaLoginState extends State<PaginaLogin> {
 
   @override
   Widget build(BuildContext context) {
+
+    FirebaseFirestore db = FirebaseFirestore.instance;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Agenda de Contatos"),
@@ -87,17 +91,39 @@ class _PaginaLoginState extends State<PaginaLogin> {
                         fontSize: 20,
                         color: Colors.white
                     ),),
-                  onPressed: (){
+                  onPressed: () async {
                     bool formOk = _formKey.currentState.validate();
                     if(! formOk){
                       return;
                     }else{
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PaginaPrincipal()
-                        ),
-                      );
+                      await db.collection('usuarios')
+                          .where('nome', isEqualTo: _controllerLogin.text)
+                          .get().then((QuerySnapshot querySnapshot) {
+                        if(querySnapshot.docs.isEmpty){
+                          showDialog(
+                              context: context,
+                              builder: (context){
+                                return _falhaLogin();
+                              });
+                        }else{
+                          var item = querySnapshot.docs[0];
+                          if(item['senha'] == _controllerSenha.text){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PaginaPrincipal()
+                              ),
+                            );
+                          }else{
+                            showDialog(
+                                context: context,
+                                builder: (context){
+                                  return _falhaLogin();
+                                });
+                          }
+                        }
+                      });
+
                     }
                     //print("Login "+_controllerLogin.text);
                     //print("Senha "+_controllerSenha.text);
@@ -110,5 +136,18 @@ class _PaginaLoginState extends State<PaginaLogin> {
     );
   }
 
+  _falhaLogin(){
+    return AlertDialog(
+      title: Text("Usuário ou senha incorretos!"),
+      actions: <Widget>[
+        TextButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text("Ok")
+        ),
+      ],
+    );
+  }
 
 }
